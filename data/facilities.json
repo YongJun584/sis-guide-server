@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "name": "본관(행정실/교무실)",
+    "category": "행정",
+    "department_id": null,
+    "latitude": null,
+    "longitude": null,
+    "description": "서귀포산업과학고등학교 본관. 주소: 제주특별자치도 서귀포시 516로 501 (예시 설명 - 실제 위치로 수정 필요)",
+    "image_url": null,
+    "sort_order": 1
+  },
+  {
+    "id": 2,
+    "name": "심경의 집 (기숙사)",
+    "category": "기숙사",
+    "department_id": null,
+    "latitude": null,
+    "longitude": null,
+    "description": "교내 기숙사. 학교 홈페이지 '심경의 집(기숙사)' 메뉴 참고 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 2
+  },
+  {
+    "id": 3,
+    "name": "자영생명산업과 실습장(스마트팜)",
+    "category": "실습동",
+    "department_id": 1,
+    "latitude": null,
+    "longitude": null,
+    "description": "스마트팜/조경 실습 공간 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 3
+  },
+  {
+    "id": 4,
+    "name": "자영말산업과 마장",
+    "category": "실습동",
+    "department_id": 2,
+    "latitude": null,
+    "longitude": null,
+    "description": "국제규격 실내외 마장 및 원형조련시설 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 4
+  },
+  {
+    "id": 5,
+    "name": "인테리어디자인과 실습동",
+    "category": "실습동",
+    "department_id": 3,
+    "latitude": null,
+    "longitude": null,
+    "description": "NCS시각디자인실, NCS실내디자인실 등 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 5
+  },
+  {
+    "id": 6,
+    "name": "스마트에너지설비과 실습동",
+    "category": "실습동",
+    "department_id": 4,
+    "latitude": null,
+    "longitude": null,
+    "description": "건설기계(지게차·굴착기·로더·불도저·롤러) 실습장 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 6
+  },
+  {
+    "id": 7,
+    "name": "자동차과 실습동",
+    "category": "실습동",
+    "department_id": 5,
+    "latitude": null,
+    "longitude": null,
+    "description": "자동차 정비/차체수리/도장 실습장 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 7
+  },
+  {
+    "id": 8,
+    "name": "통신전자과 실습동",
+    "category": "실습동",
+    "department_id": 6,
+    "latitude": null,
+    "longitude": null,
+    "description": "전기·전자·통신 실습장 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 8
+  },
+  {
+    "id": 9,
+    "name": "급식소",
+    "category": "급식",
+    "department_id": null,
+    "latitude": null,
+    "longitude": null,
+    "description": "학생 급식소 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 9
+  },
+  {
+    "id": 10,
+    "name": "체육관",
+    "category": "체육",
+    "department_id": null,
+    "latitude": null,
+    "longitude": null,
+    "description": "실내 체육관 (좌표 미확인)",
+    "image_url": null,
+    "sort_order": 10
+  }
+]
