@@ -193,8 +193,15 @@ const avatarUpload = multer({
     },
   }),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  // 확실하지 않음/실제 원인: 앱(Flutter http 패키지)이 업로드할 때 파일의
+  // Content-Type을 따로 지정하지 않으면 "application/octet-stream"으로 보내는
+  // 경우가 있어서, mimetype만 보면 진짜 이미지 파일인데도 거부당했습니다.
+  // 그래서 mimetype이 애매하면 파일 확장자로도 한 번 더 확인합니다.
   fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith("image/")) {
+    const ext = path.extname(file.originalname || "").toLowerCase();
+    const isImageExt = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".bmp"].includes(ext);
+    const isImageMime = Boolean(file.mimetype) && file.mimetype.startsWith("image/");
+    if (!isImageExt && !isImageMime) {
       return cb(new Error("이미지 파일만 업로드할 수 있습니다."));
     }
     cb(null, true);
