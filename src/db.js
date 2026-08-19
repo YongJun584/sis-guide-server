@@ -21,6 +21,7 @@ const WORKS_FILE = path.join(DATA_DIR, "works.json");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const TODOS_FILE = path.join(DATA_DIR, "todos.json");
 const CONGESTION_FILE = path.join(DATA_DIR, "congestion.json");
+const VERIFICATION_CODES_FILE = path.join(DATA_DIR, "verification_codes.json");
 
 // Postgres에 백업/복원할 때 쓰는 key 이름과 로컬 파일의 대응표입니다.
 const CLOUD_KEYS = {
@@ -30,6 +31,7 @@ const CLOUD_KEYS = {
   users: USERS_FILE,
   todos: TODOS_FILE,
   congestion: CONGESTION_FILE,
+  verification_codes: VERIFICATION_CODES_FILE,
 };
 
 function ensureDataDir() {
@@ -110,6 +112,13 @@ const db = {
   saveCongestionReports(list) {
     writeJson(CONGESTION_FILE, list);
     cloudStore.push("congestion", list);
+  },
+  getVerificationCodes() {
+    return readJson(VERIFICATION_CODES_FILE);
+  },
+  saveVerificationCodes(list) {
+    writeJson(VERIFICATION_CODES_FILE, list);
+    cloudStore.push("verification_codes", list);
   },
   hydrate,
 };
