@@ -10,6 +10,7 @@ const { getTokenFromHeader, requireAuth } = require("../middleware/auth");
 const neis = require("../services/neisClient");
 const mailer = require("../services/mailer");
 const verificationCodes = require("../services/verificationCodes");
+const cloudStore = require("../services/cloudStore");
 
 const router = express.Router();
 
@@ -385,6 +386,10 @@ router.post("/avatar-photo", requireAuth, (req, res) => {
     users[idx].avatar_type = "photo";
     users[idx].avatar_value = relativePath;
     db.saveUsers(users);
+
+    // uploads/ 폴더는 재배포/재시작마다 초기화되므로, 파일 자체도 외부 DB에
+    // 백업해둡니다(설정 안 되어 있으면 cloudStore가 조용히 넘어갑니다).
+    cloudStore.pushFile("avatars", req.file.filename, fs.readFileSync(req.file.path));
 
     res.json({ avatar_type: "photo", avatar_value: relativePath });
   });

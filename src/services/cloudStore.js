@@ -43,6 +43,57 @@ function ensureTable() {
   return readyPromise;
 }
 
+// 업로드된 파일(프로필 사진, 작품 사진)도 uploads/ 폴더가 재배포/재시작마다
+// 초기화되는 문제가 있어서, JSON 데이터와 마찬가지로 Postgres에도 파일
+// 원본(바이너리)을 함께 백업합니다. subdir(예: "avatars", "works")별로
+// 여러 파일을 저장할 수 있게 (subdir, filename)을 기본키로 씁니다.
+let filesReadyPromise = null;
+
+function ensureFilesTable() {
+  if (!pool) return Promise.resolve();
+  if (!filesReadyPromise) {
+    filesReadyPromise = pool.query(
+      `CREATE TABLE IF NOT EXISTS app_files (
+         subdir TEXT NOT NULL,
+         filename TEXT NOT NULL,
+         data BYTEA NOT NULL,
+         updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+         PRIMARY KEY (subdir, filename)
+       )`
+    );
+  }
+  return filesReadyPromise;
+}
+
+// 업로드 직후 호출합니다. buffer는 파일 내용(Buffer)입니다.
+async function pushFile(subdir, filename, buffer) {
+  if (!pool) return;
+  try {
+    await ensureFilesTable();
+    await pool.query(
+      `INSERT INTO app_files (subdir, filename, data, updated_at) VALUES ($1, $2, $3, now())
+       ON CONFLICT (subdir, filename) DO UPDATE SET data = $3, updated_at = now()`,
+      [subdir, filename, buffer]
+    );
+  } catch (err) {
+    console.error(`[cloudStore] 파일 백업 실패 (${subdir}/${filename}):`, err.message);
+  }
+}
+
+// 서버 시작 시 한 번씩 호출합니다. 해당 subdir에 백업된 모든 파일을
+// [{ filename, data }] 형태로 돌려줍니다(data는 Buffer).
+async function pullAllFiles(subdir) {
+  if (!pool) return [];
+  try {
+    await ensureFilesTable();
+    const res = await pool.query(`SELECT filename, data FROM app_files WHERE subdir = $1`, [subdir]);
+    return res.rows;
+  } catch (err) {
+    console.error(`[cloudStore] 파일 목록 복원 실패 (${subdir}):`, err.message);
+    return [];
+  }
+}
+
 // 로컬 파일에 저장한 직후 호출합니다. 실패해도(네트워크 오류 등) 로컬 저장은
 // 이미 끝난 뒤라 사용자 요청 자체는 실패하지 않습니다 - 콘솔에만 에러를
 // 남깁니다(그래서 이 함수는 항상 성공(resolve)하고, 절대 reject하지 않습니다).
@@ -75,4 +126,4 @@ async function pull(key) {
   }
 }
 
-module.exports = { push, pull, isEnabled: Boolean(pool) };
+module.exports = { push, pull, pushFile, pullAllFiles, isEnabled: Boolean(pool) };

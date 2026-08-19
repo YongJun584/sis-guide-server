@@ -22,6 +22,9 @@ const USERS_FILE = path.join(DATA_DIR, "users.json");
 const TODOS_FILE = path.join(DATA_DIR, "todos.json");
 const CONGESTION_FILE = path.join(DATA_DIR, "congestion.json");
 const VERIFICATION_CODES_FILE = path.join(DATA_DIR, "verification_codes.json");
+const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
+// 업로드된 파일이 저장되는 하위 폴더들. (uploads/avatars, uploads/works)
+const UPLOAD_SUBDIRS = ["avatars", "works"];
 
 // Postgres에 백업/복원할 때 쓰는 key 이름과 로컬 파일의 대응표입니다.
 const CLOUD_KEYS = {
@@ -68,6 +71,24 @@ async function hydrate() {
     }
   }
   console.log("[db] 복원 완료.");
+}
+
+// 서버 시작 시 한 번 호출: Postgres에 백업된 업로드 파일(프로필 사진, 작품
+// 사진)들을 uploads/ 폴더로 복원합니다. hydrate()와 마찬가지로 재배포/재시작
+// 후에도 사용자가 올린 사진이 사라지지 않게 하기 위함입니다.
+async function hydrateUploads() {
+  if (!cloudStore.isEnabled) return;
+  for (const subdir of UPLOAD_SUBDIRS) {
+    const dir = path.join(UPLOADS_DIR, subdir);
+    fs.mkdirSync(dir, { recursive: true });
+    const files = await cloudStore.pullAllFiles(subdir);
+    for (const f of files) {
+      fs.writeFileSync(path.join(dir, f.filename), f.data);
+    }
+    if (files.length > 0) {
+      console.log(`[db] uploads/${subdir} 파일 ${files.length}개 복원 완료.`);
+    }
+  }
 }
 
 const db = {
@@ -121,6 +142,7 @@ const db = {
     cloudStore.push("verification_codes", list);
   },
   hydrate,
+  hydrateUploads,
 };
 
 module.exports = db;

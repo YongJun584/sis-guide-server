@@ -4,6 +4,7 @@ const express = require("express");
 const multer = require("multer");
 const db = require("../db");
 const { requireAdmin } = require("../middleware/auth");
+const cloudStore = require("../services/cloudStore");
 
 const router = express.Router();
 
@@ -49,6 +50,11 @@ router.post("/upload-image", requireAdmin, (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "photo 파일이 필요합니다." });
     }
+
+    // uploads/ 폴더는 재배포/재시작마다 초기화되므로, 파일 자체도 외부 DB에
+    // 백업해둡니다(설정 안 되어 있으면 cloudStore가 조용히 넘어갑니다).
+    cloudStore.pushFile("works", req.file.filename, fs.readFileSync(req.file.path));
+
     res.json({ image_url: `/uploads/works/${req.file.filename}` });
   });
 });
