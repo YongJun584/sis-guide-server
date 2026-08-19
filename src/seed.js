@@ -4,6 +4,7 @@
 // -> 반드시 실제 좌표로 교체해서 사용하세요. (카카오맵 앱/웹에서 학교를 검색 후 각 건물 위치를 길게 눌러 좌표 확인 가능)
 "use strict";
 
+const bcrypt = require("bcryptjs");
 const db = require("./db");
 
 const departments = [
@@ -209,14 +210,162 @@ const facilities = [
   },
 ];
 
+// 작품 갤러리 데이터. 실제 학생 작품이 아니라 화면 구성을 확인하기 위한
+// 예시(placeholder)입니다. image_url, title, description을 실제 작품 내용으로
+// 교체해주세요. 학과당 여러 개 등록 가능합니다 (department_id로 구분).
+const works = [
+  {
+    id: 1,
+    department_id: 1,
+    title: "예시 작품 (실제 작품으로 교체 필요)",
+    description: "이 자리에 학생 작품 사진과 설명을 넣어주세요. 예: 스마트팜 재배 프로젝트, 조경 설계 작품 등.",
+    image_url: null,
+    student_name: null,
+    year: null,
+    sort_order: 1,
+  },
+  {
+    id: 2,
+    department_id: 2,
+    title: "예시 작품 (실제 작품으로 교체 필요)",
+    description: "이 자리에 학생 작품 사진과 설명을 넣어주세요.",
+    image_url: null,
+    student_name: null,
+    year: null,
+    sort_order: 1,
+  },
+  {
+    id: 3,
+    department_id: 3,
+    title: "예시 작품 (실제 작품으로 교체 필요)",
+    description: "이 자리에 학생 작품 사진과 설명을 넣어주세요. 예: 실내디자인 시안, 그래픽디자인 포스터 등.",
+    image_url: null,
+    student_name: null,
+    year: null,
+    sort_order: 1,
+  },
+  {
+    id: 4,
+    department_id: 4,
+    title: "예시 작품 (실제 작품으로 교체 필요)",
+    description: "이 자리에 학생 작품 사진과 설명을 넣어주세요.",
+    image_url: null,
+    student_name: null,
+    year: null,
+    sort_order: 1,
+  },
+  {
+    id: 5,
+    department_id: 5,
+    title: "예시 작품 (실제 작품으로 교체 필요)",
+    description: "이 자리에 학생 작품 사진과 설명을 넣어주세요.",
+    image_url: null,
+    student_name: null,
+    year: null,
+    sort_order: 1,
+  },
+  {
+    id: 6,
+    department_id: 6,
+    title: "예시 작품 (실제 작품으로 교체 필요)",
+    description: "이 자리에 학생 작품 사진과 설명을 넣어주세요. 예: IT 네트워크 시스템, 드론제어 프로젝트 등.",
+    image_url: null,
+    student_name: null,
+    year: null,
+    sort_order: 1,
+  },
+];
+
+// 로그인 테스트용 계정입니다. 일반 사용자 1개, 관리자 1개, 교사 1개를 만들어 두었습니다.
+// 비밀번호는 bcryptjs로 해시해서 저장합니다(평문 저장 X).
+// ⚠️ 데모/테스트용 비밀번호입니다. 실제로 배포한다면 반드시 바꿔야 합니다.
+//   - 일반 사용자: student / sis1234
+//   - 관리자:      admin   / admin1234
+//   - 교사:        teacher / teacher1234
+// notifyEnabled: 교사가 "학생이 보낸 할 일 알림"을 받을지 켜고 끌 수 있는 설정입니다.
+// (교사 계정에만 의미가 있는 값이라, 다른 role에는 없어도 됩니다.)
+const users = [
+  {
+    id: 1,
+    username: "student",
+    password: bcrypt.hashSync("sis1234", 10),
+    name: "일반 사용자",
+    role: "user",
+  },
+  {
+    id: 2,
+    username: "admin",
+    password: bcrypt.hashSync("admin1234", 10),
+    name: "관리자",
+    role: "admin",
+  },
+  {
+    id: 3,
+    username: "teacher",
+    password: bcrypt.hashSync("teacher1234", 10),
+    name: "담임 선생님",
+    role: "teacher",
+    notifyEnabled: true,
+  },
+];
+
+// 전체 초기화 (기존 데이터를 예시 데이터로 덮어씁니다. `npm run seed`로 직접 실행할 때만 사용하세요.
+// 시설 좌표 등을 직접 수정해둔 상태라면 이 함수는 그 수정 내용을 지워버리니 주의하세요.)
 function seed() {
   db.saveDepartments(departments);
   db.saveFacilities(facilities);
-  console.log(`시딩 완료: 학과 ${departments.length}개, 시설 ${facilities.length}개`);
+  db.saveWorks(works);
+  db.saveUsers(users);
+  console.log(
+    `시딩 완료: 학과 ${departments.length}개, 시설 ${facilities.length}개, 작품 ${works.length}개, 계정 ${users.length}개`
+  );
 }
+
+// 비어있는 데이터만 채웁니다 (서버 시작 시 자동 호출). 이미 있는 데이터(예: 직접 채운
+// 시설 좌표)는 절대 덮어쓰지 않습니다.
+function seedMissing() {
+  if (db.getDepartments().length === 0) {
+    db.saveDepartments(departments);
+    console.log(`학과 데이터 시딩: ${departments.length}개`);
+  }
+  if (db.getFacilities().length === 0) {
+    db.saveFacilities(facilities);
+    console.log(`시설 데이터 시딩: ${facilities.length}개`);
+  }
+  if (db.getWorks().length === 0) {
+    db.saveWorks(works);
+    console.log(`작품 데이터 시딩: ${works.length}개`);
+  }
+  // 계정은 통째로 비어있는지가 아니라, 기본 계정(student/admin/teacher) 각각이
+  // 있는지를 보고 없는 것만 추가합니다. 그래야 나중에 기본 계정 종류가 늘어나도
+  // (이번에 teacher가 추가된 것처럼) 기존에 만들어둔 서버에도 자동으로 채워집니다.
+  // 회원가입 등으로 추가된 다른 계정은 건드리지 않습니다.
+  const existingUsers = db.getUsers();
+  const existingUsernames = new Set(existingUsers.map((u) => u.username));
+  const missingDefaultUsers = users.filter((u) => !existingUsernames.has(u.username));
+  if (missingDefaultUsers.length > 0) {
+    // 기본 계정의 id를 그대로 쓰면 회원가입 등으로 이미 그 id를 쓰는 계정과
+    // 충돌할 수 있어서, 실제 저장할 때는 항상 새 id를 다시 부여합니다.
+    let nextId = existingUsers.length > 0 ? Math.max(...existingUsers.map((u) => u.id)) + 1 : 1;
+    const usersToAdd = missingDefaultUsers.map((u) => ({ ...u, id: nextId++ }));
+    db.saveUsers([...existingUsers, ...usersToAdd]);
+    console.log(`계정 데이터 보완: ${usersToAdd.map((u) => u.username).join(", ")} 추가됨`);
+  }
+}
+
+// 서버 시작 로그 등에서 "기본 계정이 이거예요"라고 보여주기 위한 평문 정보입니다.
+// (users 배열에는 비밀번호가 해시된 상태로만 들어있어 복원이 안 되므로 따로 둡니다.
+//  이 값을 실제 비밀번호와 다르게 바꿨다면 여기도 같이 수정해주세요.)
+const defaultCredentials = [
+  { username: "student", password: "sis1234", role: "user", label: "일반 사용자" },
+  { username: "admin", password: "admin1234", role: "admin", label: "관리자" },
+  { username: "teacher", password: "teacher1234", role: "teacher", label: "교사" },
+];
 
 if (require.main === module) {
   seed();
 }
 
 module.exports = seed;
+module.exports.seedMissing = seedMissing;
+module.exports.defaultCredentials = defaultCredentials;

@@ -10,6 +10,10 @@ const path = require("path");
 const DATA_DIR = path.join(__dirname, "..", "data");
 const DEPARTMENTS_FILE = path.join(DATA_DIR, "departments.json");
 const FACILITIES_FILE = path.join(DATA_DIR, "facilities.json");
+const WORKS_FILE = path.join(DATA_DIR, "works.json");
+const USERS_FILE = path.join(DATA_DIR, "users.json");
+const TODOS_FILE = path.join(DATA_DIR, "todos.json");
+const CONGESTION_FILE = path.join(DATA_DIR, "congestion.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -42,6 +46,30 @@ const db = {
   },
   saveFacilities(list) {
     writeJson(FACILITIES_FILE, list);
+  },
+  getWorks() {
+    return readJson(WORKS_FILE);
+  },
+  saveWorks(list) {
+    writeJson(WORKS_FILE, list);
+  },
+  getUsers() {
+    return readJson(USERS_FILE);
+  },
+  saveUsers(list) {
+    writeJson(USERS_FILE, list);
+  },
+  getTodos() {
+    return readJson(TODOS_FILE);
+  },
+  saveTodos(list) {
+    writeJson(TODOS_FILE, list);
+  },
+  getCongestionReports() {
+    return readJson(CONGESTION_FILE);
+  },
+  saveCongestionReports(list) {
+    writeJson(CONGESTION_FILE, list);
   },
 };
 
