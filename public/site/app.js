@@ -89,7 +89,7 @@ async function render() {
 
 // ── 학과 목록 ─────────────────────────────────────────
 async function renderList() {
-  setTitle("SIS GUIDE 학과 안내", false);
+  setTitle("SIS LINK 학과 안내", false);
   loadingView();
   try {
     const departments = await fetchJson("/api/departments");

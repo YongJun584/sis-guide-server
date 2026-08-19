@@ -1,7 +1,7 @@
 {
   "name": "sis-guide-server",
   "version": "1.0.0",
-  "description": "SIS GUIDE - 서귀포산업과학고등학교 안내 앱 백엔드 서버",
+  "description": "SIS LINK - 서귀포산업과학고등학교 안내 앱 백엔드 서버",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

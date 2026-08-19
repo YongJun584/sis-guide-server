@@ -30,7 +30,7 @@ function getLanAddresses() {
 app.listen(PORT, () => {
   const lanAddresses = getLanAddresses();
 
-  console.log(`SIS GUIDE 서버 실행 중 (포트 ${PORT})`);
+  console.log(`SIS LINK 서버 실행 중 (포트 ${PORT})`);
   console.log("");
   if (lanAddresses.length === 0) {
     console.log("⚠ Wi-Fi 등 외부에서 접속 가능한 네트워크 주소를 찾지 못했습니다.");

@@ -1,6 +1,6 @@
-# SIS GUIDE 서버
+# SIS LINK 서버
 
-서귀포산업과학고등학교 안내 앱 "SIS GUIDE"의 백엔드 API 서버입니다.
+서귀포산업과학고등학교 안내 앱 "SIS LINK"의 백엔드 API 서버입니다.
 Node.js(Express) + JSON 파일 저장소로 구성되어 있습니다. (네이티브 모듈 컴파일이 필요한
 SQLite 드라이버 대신, 어떤 환경에서도 `npm install`만으로 바로 동작하도록 순수 JS로 구현했습니다.
 데이터가 많아지면 추후 실제 DB로 교체하는 것을 권장합니다.)
