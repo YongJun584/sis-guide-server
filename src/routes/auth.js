@@ -61,10 +61,11 @@ function issueSession(user) {
 }
 
 // POST /api/auth/register - 회원가입
-// 회원가입으로는 항상 일반 사용자(role: "user")로만 가입됩니다.
+// 회원가입으로는 일반 사용자(role: "user") 또는 교사(role: "teacher") 계정만
+// 만들 수 있습니다. isTeacher를 true로 보내면 교사 계정으로 가입됩니다.
 // 관리자 계정은 보안상 회원가입으로 만들 수 없고, 서버 시딩(seed.js)으로만 생성됩니다.
 router.post("/register", (req, res) => {
-  const { username, password, name } = req.body || {};
+  const { username, password, name, isTeacher } = req.body || {};
 
   if (!username || !password || !name) {
     return res.status(400).json({ error: "아이디, 비밀번호, 이름을 모두 입력해주세요." });
@@ -87,7 +88,7 @@ router.post("/register", (req, res) => {
     username: String(username).trim(),
     password: bcrypt.hashSync(password, 10),
     name: String(name).trim(),
-    role: "user",
+    role: isTeacher === true ? "teacher" : "user",
   };
   users.push(newUser);
   db.saveUsers(users);

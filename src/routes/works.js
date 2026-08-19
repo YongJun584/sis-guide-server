@@ -1,8 +1,49 @@
+const path = require("path");
+const fs = require("fs");
 const express = require("express");
+const multer = require("multer");
 const db = require("../db");
 const { requireAdmin } = require("../middleware/auth");
 
 const router = express.Router();
+
+// 업로드된 작품 사진 저장 위치: <서버루트>/uploads/works/
+// (auth.js의 avatar-photo 업로드와 같은 방식입니다)
+const WORK_UPLOAD_DIR = path.join(__dirname, "..", "..", "uploads", "works");
+const workImageUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      fs.mkdirSync(WORK_UPLOAD_DIR, { recursive: true });
+      cb(null, WORK_UPLOAD_DIR);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname || "").toLowerCase() || ".jpg";
+      cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("이미지 파일만 업로드할 수 있습니다."));
+    }
+    cb(null, true);
+  },
+});
+
+// POST /api/works/upload-image - 갤러리에서 고른 사진을 업로드하고, 저장된 경로를 돌려줍니다.
+// (관리자 전용). multipart/form-data, 필드명 "photo" 하나로 보내면 됩니다.
+// 응답의 image_url을 그대로 작품 등록/수정(POST/PUT /api/works)의 image_url로 쓰면 됩니다.
+router.post("/upload-image", requireAdmin, (req, res) => {
+  workImageUpload.single("photo")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || "업로드에 실패했습니다." });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: "photo 파일이 필요합니다." });
+    }
+    res.json({ image_url: `/uploads/works/${req.file.filename}` });
+  });
+});
 
 function withDepartmentName(work, departments) {
   const dept = departments.find((d) => d.id === work.department_id);
