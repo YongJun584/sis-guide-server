@@ -13,6 +13,45 @@ const router = express.Router();
 const SCHOOL_LATITUDE = 33.29717654;
 const SCHOOL_LONGITUDE = 126.5944555;
 
+// TAGO(apis.data.go.kr) 연결 자체가 안 될 때(네트워크 차단 등) 보여줄 대체
+// 정류장 목록입니다. 지어낸 장소가 아니라, 카카오맵 정류장 검색 API에서 직접
+// 확인한 학교 바로 앞 실제 정류장 3곳입니다 (2026-09-16 기준).
+// cityCode(39)는 TAGO 도시코드 표에서 확실히 검증하지 못한 값입니다
+// (확실하지 않음 - 제주라서 39로 추정). TAGO 연결이 복구되면 실제 조회 결과로
+// 검증해서 고쳐야 합니다. 도착시간(도착정보 API)은 이 fallback으로 대신하지
+// 않습니다 - 실시간 데이터가 아닌 걸 지어내는 건 하지 않기로 했습니다. 대신
+// isFallback: true를 같이 내려서, 앱에서 "지금은 실시간 정보를 가져올 수
+// 없다"고 정직하게 안내할 수 있게 합니다.
+const FALLBACK_STOPS = [
+  {
+    cityCode: "39",
+    nodeId: "406000259",
+    nodeName: "서귀포산업과학고등학교 (법호촌/서귀포온성학교 방면)",
+    nodeNo: null,
+    latitude: 33.29514773,
+    longitude: 126.5949757,
+    isFallback: true,
+  },
+  {
+    cityCode: "39",
+    nodeId: "406000240",
+    nodeName: "서귀포산업과학고등학교 (돈내코교 방면)",
+    nodeNo: null,
+    latitude: 33.29573286,
+    longitude: 126.59503741,
+    isFallback: true,
+  },
+  {
+    cityCode: "39",
+    nodeId: "406000241",
+    nodeName: "서귀포산업과학고등학교 (하례환승정류장 방면)",
+    nodeNo: null,
+    latitude: 33.29591062,
+    longitude: 126.59563515,
+    isFallback: true,
+  },
+];
+
 const CONGESTION_LEVELS = ["low", "medium", "high"];
 const CONGESTION_WINDOW_MS = 30 * 60 * 1000; // 최근 30분 신고만 "지금 혼잡도"로 취급합니다.
 const CONGESTION_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24시간 지난 신고는 저장할 때 같이 정리합니다.
@@ -27,14 +66,11 @@ router.get("/stops", async (req, res) => {
     res.json(stops);
   } catch (err) {
     // "fetch failed"는 Node가 진짜 원인(err.cause - DNS 실패, 연결 거부, 인증서
-    // 오류 등)을 감싸버려서 메시지만 봐서는 원인을 알 수 없습니다. 원인을 바로
-    // 확인할 수 있도록, 서버 로그와 응답 둘 다에 cause를 같이 남깁니다.
-    // (확실하지 않음: 임시 디버깅용입니다 - 원인이 파악되면 다시 정리해야 합니다.)
-    console.error("[bus/stops] TAGO 요청 실패:", err, "cause:", err.cause);
-    res.status(502).json({
-      error: `버스정류장 조회에 실패했습니다: ${err.message}`,
-      cause: err.cause ? String(err.cause) : null,
-    });
+    // 오류 등)을 감싸버려서 메시지만 봐서는 원인을 알 수 없습니다. 서버 로그에는
+    // 계속 원인을 남기되(확실하지 않음: 임시 디버깅용, 원인 파악되면 정리 필요),
+    // 앱 화면이 텅 비지 않도록 실제로 확인된 학교 앞 정류장 3곳을 대신 돌려줍니다.
+    console.error("[bus/stops] TAGO 요청 실패, fallback 정류장으로 대체:", err, "cause:", err.cause);
+    res.json(FALLBACK_STOPS);
   }
 });
 
