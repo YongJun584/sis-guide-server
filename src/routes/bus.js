@@ -5,10 +5,13 @@ const tago = require("../services/tagoClient");
 
 const router = express.Router();
 
-// 학교 대표 좌표 (기본값). app_config.dart의 값과 동일하게 맞춰뒀습니다.
-// 확실하지 않음: 정확한 학교 좌표가 아직 확인되지 않았습니다(추측값).
-const SCHOOL_LATITUDE = 33.276;
-const SCHOOL_LONGITUDE = 126.56;
+// 학교 대표 좌표 (기본값, GPS를 못 가져왔을 때만 씀).
+// 카카오맵에서 "서귀포산업과학고등학교"를 검색해 실제 검색 API 응답에서 받아온
+// 좌표로 교정했습니다 (제주특별자치도 서귀포시 상효동 1237-1 / 516로 501).
+// 예전 값(33.276, 126.56)은 학교에서 3km 이상 떨어진 엉뚱한 지점이라 이 좌표로
+// 정류장을 조회하면 계속 빈 배열이 돌아왔습니다.
+const SCHOOL_LATITUDE = 33.29717654;
+const SCHOOL_LONGITUDE = 126.5944555;
 
 const CONGESTION_LEVELS = ["low", "medium", "high"];
 const CONGESTION_WINDOW_MS = 30 * 60 * 1000; // 최근 30분 신고만 "지금 혼잡도"로 취급합니다.
@@ -23,7 +26,15 @@ router.get("/stops", async (req, res) => {
     const stops = await tago.findNearbyStops(lat, lng);
     res.json(stops);
   } catch (err) {
-    res.status(502).json({ error: `버스정류장 조회에 실패했습니다: ${err.message}` });
+    // "fetch failed"는 Node가 진짜 원인(err.cause - DNS 실패, 연결 거부, 인증서
+    // 오류 등)을 감싸버려서 메시지만 봐서는 원인을 알 수 없습니다. 원인을 바로
+    // 확인할 수 있도록, 서버 로그와 응답 둘 다에 cause를 같이 남깁니다.
+    // (확실하지 않음: 임시 디버깅용입니다 - 원인이 파악되면 다시 정리해야 합니다.)
+    console.error("[bus/stops] TAGO 요청 실패:", err, "cause:", err.cause);
+    res.status(502).json({
+      error: `버스정류장 조회에 실패했습니다: ${err.message}`,
+      cause: err.cause ? String(err.cause) : null,
+    });
   }
 });
 
@@ -104,7 +115,12 @@ router.get("/arrivals", async (req, res) => {
     const arrivals = await tago.getStationArrivals(cityCode, nodeId);
     res.json(arrivals);
   } catch (err) {
-    res.status(502).json({ error: `도착정보 조회에 실패했습니다: ${err.message}` });
+    // /stops와 같은 이유로 cause를 같이 남깁니다 (임시 디버깅용).
+    console.error("[bus/arrivals] TAGO 요청 실패:", err, "cause:", err.cause);
+    res.status(502).json({
+      error: `도착정보 조회에 실패했습니다: ${err.message}`,
+      cause: err.cause ? String(err.cause) : null,
+    });
   }
 });
 
